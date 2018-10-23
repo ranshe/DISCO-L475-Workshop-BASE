@@ -194,30 +194,30 @@ int main(void)
     }
 
     // Creating resources, which can be written or read from the cloud
-    button_res = client.create_resource("3200/0/5501", "button_count");
+    button_res = client.create_resource("3200/0/5501", "Button count");
     button_res->set_value(0);
     button_res->methods(M2MMethod::GET);
     button_res->observable(true);
     button_res->attach_notification_callback(button_callback);
 
-    pattern_res = client.create_resource("3201/0/5853", "blink_pattern");
+    pattern_res = client.create_resource("3201/0/5853", "Blink pattern");
     pattern_res->set_value("500:500:500:500:500:500:500:500");
     pattern_res->methods(M2MMethod::GET | M2MMethod::PUT);
     pattern_res->attach_put_callback(pattern_updated);
 
-    temperature_res = client.create_resource("3303/0/5700", "temperature_resource");
+    temperature_res = client.create_resource("3303/0/5700", "Temperature reading");
     temperature_res->set_value(0);
     temperature_res->methods(M2MMethod::GET);
     temperature_res->observable(true);
     temperature_res->attach_notification_callback(temperature_callback);
     
-    humidity_res = client.create_resource("3304/0/5700", "humidity_resource");
+    humidity_res = client.create_resource("3304/0/5700", "Humidity reading");
     humidity_res->set_value(0);
     humidity_res->methods(M2MMethod::GET);
     humidity_res->observable(true);
     humidity_res->attach_notification_callback(humidity_callback);
     
-    MbedCloudClientResource *blink_res = client.create_resource("3201/0/5850", "blink_action");
+    MbedCloudClientResource *blink_res = client.create_resource("3201/0/5850", "Blink action");
     blink_res->methods(M2MMethod::POST);
     blink_res->attach_post_callback(blink_callback);
 
