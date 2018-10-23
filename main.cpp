@@ -42,35 +42,6 @@ ISM43362Interface net;
 // Declaring pointers for access to Mbed Cloud Client resources outside of main()
 MbedCloudClientResource *button_res;
 MbedCloudClientResource *pattern_res;
-MbedCloudClientResource *temperature_res;
-MbedCloudClientResource *humidity_res;
-
-/* SENSORS */
-#include "HTS221Sensor.h" //temp & humidity
-
-Thread HTS221Thread;
-void HTS221Handler(void)
-{
-    uint8_t id;
-    float value1, value2;
-    static DevI2C devI2c(PB_11,PB_10);
-    static HTS221Sensor hum_temp(&devI2c);
-    hum_temp.init(NULL);
-    hum_temp.read_id(&id);
-    printf("\r\n\n\nHTS221 humidity & temperature = 0x%X\r\n", id);
-    hum_temp.enable();
-    printf("HTS221: [temp] %.2f C, [hum] %.2f%%\r\n", value1, value2);
-
-    while(1)
-    {
-        wait(5);
-        // Update temperature and humidity resources
-        hum_temp.get_temperature(&value1);
-        hum_temp.get_humidity(&value2);
-        temperature_res->set_value(value1);
-        humidity_res->set_value(value2);
-    }
-}
 
 // An event queue is a very useful structure to debounce information between contexts (e.g. ISR and normal threads)
 // This is great because things such as network operations are illegal in ISR, so updating a resource in a button's fall() function is not allowed
@@ -135,16 +106,6 @@ void button_callback(MbedCloudClientResource *resource, const NoticationDelivery
     printf("Button notification, status %s (%d)\n", MbedCloudClientResource::delivery_status_to_string(status), status);
 }
 
-void temperature_callback(MbedCloudClientResource *resource, const NoticationDeliveryStatus status)
-{
-    printf("Temperature %s (%d)\n", MbedCloudClientResource::delivery_status_to_string(status), status);
-}
- 
-void humidity_callback(MbedCloudClientResource *resource, const NoticationDeliveryStatus status)
-{
-    printf("Humidity %s (%d)\n", MbedCloudClientResource::delivery_status_to_string(status), status);
-}
-
 /**
  * Registration callback handler
  * @param endpoint Information about the registered endpoint such as the name (so you can find it back in portal)
@@ -204,18 +165,6 @@ int main(void)
     pattern_res->set_value("500:500:500:500:500:500:500:500");
     pattern_res->methods(M2MMethod::GET | M2MMethod::PUT);
     pattern_res->attach_put_callback(pattern_updated);
-
-    temperature_res = client.create_resource("3303/0/5700", "Temperature reading");
-    temperature_res->set_value(0);
-    temperature_res->methods(M2MMethod::GET);
-    temperature_res->observable(true);
-    temperature_res->attach_notification_callback(temperature_callback);
-    
-    humidity_res = client.create_resource("3304/0/5700", "Humidity reading");
-    humidity_res->set_value(0);
-    humidity_res->methods(M2MMethod::GET);
-    humidity_res->observable(true);
-    humidity_res->attach_notification_callback(humidity_callback);
     
     MbedCloudClientResource *blink_res = client.create_resource("3201/0/5850", "Blink action");
     blink_res->methods(M2MMethod::POST);
@@ -232,9 +181,7 @@ int main(void)
     // Placeholder for callback to update local resource when GET comes.
     // The timer fires on an interrupt context, but debounces it to the eventqueue, so it's safe to do network operations
     Ticker timer;
-    //timer.attach(eventQueue.event(&fake_button_press), 5.0);
-    wait(10);
-    HTS221Thread.start(HTS221Handler);
+    timer.attach(eventQueue.event(&fake_button_press), 5.0);
 
     // You can easily run the eventQueue in a separate thread if required
     eventQueue.dispatch_forever();
