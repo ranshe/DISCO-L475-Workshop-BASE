@@ -15,10 +15,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-//#ifndef MBED_TEST_MODE
+
 #include "mbed.h"
-#include <stdio.h> //needed?
-#include <errno.h> //needed?
 #include "simple-mbed-cloud-client.h"
 
 /* Quad SPI */
@@ -157,9 +155,8 @@ void registered(const ConnectorClientEndpointInfo *endpoint) {
 
 int main(void)
 {
-    printf("UPDATE");
     printf("Starting Simple Pelion Device Management Client example\n");
-    printf("Connecting to the network using Wifi...\n");
+    
     printf("Checking SDCard is Formatted\r\n");
     int err = fs.mount(&sd);
     printf("%s\n", (err ? "Fail :(" : "OK"));
@@ -177,17 +174,14 @@ int main(void)
         }
     }
     
-        printf("Connecting to the network using Wifi...\n");
-
+    printf("Connecting to the network using Wifi...\n");
     // Connect to the internet (DHCP is expected to be on)
     nsapi_error_t status = net.connect(WIFI_SSID, WIFI_PASSWORD, (strlen(WIFI_PASSWORD) > 1) ? NSAPI_SECURITY_WPA_WPA2 : NSAPI_SECURITY_NONE);
-
     if (status != 0)
     {
         printf("Connecting to the network failed %d!\n", status);
         return -1;
     }
-
     printf("Connected to the network successfully. IP address: %s\n", net.get_ip_address());
 
     // SimpleMbedCloudClient handles registering over LwM2M to Mbed Cloud
@@ -245,4 +239,3 @@ int main(void)
     // You can easily run the eventQueue in a separate thread if required
     eventQueue.dispatch_forever();
 }
-//#endif
